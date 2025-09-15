@@ -1,0 +1,178 @@
+/* Base Reset */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Header */
+.headerUser {
+    position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #750000; /* deep red */
+  color: white;
+  text-align: center; /* align text to the right */
+  padding: 20px 30px;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.headerUser h1 {
+   margin: 0;
+  font-size: 28px;
+  font-weight: normal;
+  display: inline-block;
+}
+
+.bold-text {
+  font-weight: bold;
+  color: white;
+}
+
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 70px; /* below header */
+  left: 0;
+  width: 250px;
+  height: calc(100% - 70px);
+  background-color:#850005;
+  color: white;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+  transform: translateX(-100%);
+  z-index: 1;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  padding: 15px 20px;
+  border-bottom: 1px solid  #ffc300;
+}
+
+.sidebar ul li a {
+  transition: all 0.3s ease; /* Smooth animation */
+  color: white;
+  text-decoration: none;
+  display: block;
+}
+
+.sidebar ul li a:hover {
+  background-color: #ffc300;
+  border-radius: 30px;
+  padding: 12px 20px; /* Increase padding for height/width */
+  font-size: 1.1em;    /* Slightly enlarge the text */
+  transform: scale(1.05); /* Slight zoom effect */
+}
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+  background-color: #ffc300;
+  border-radius: 30px;
+  padding: 12px 20px;
+  font-size: 1.1em;
+  transform: scale(1.05)
+}
+/* Sidebar Scrollbar Styling: Chrome, Edge, Safari */
+.sidebar {
+  overflow-y: auto;
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #ffc300 #850005; /* thumb, track for Firefox */
+}
+
+/* Chrome/Edge/Safari */
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+  opacity: 5;
+  transition: opacity 0.3s ease;
+}
+
+/* Show scrollbar on hover */
+.sidebar:hover::-webkit-scrollbar {
+  opacity: 1;
+}
+
+/* Track */
+.sidebar::-webkit-scrollbar-track {
+  background: #850005; /* Match sidebar */
+  border-radius: 10px;
+}
+
+/* Thumb */
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: #ffc300;
+  border-radius: 10px;
+}
+
+/* Thumb on hover (brighter + glow) */
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: #ffdc60;
+  box-shadow: 0 0 5px #ffc300;
+}
+
+/* Default hidden state */
+.dropdown-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+  padding-left: 15px;
+}
+
+/* Expanded state */
+.dropdown.open .dropdown-content {
+  max-height: 300px; /* or large enough to fit all items */
+}
+
+/* Style dropdown items */
+.dropdown-content li a {
+  font-size: 14px;
+  color: #ccc;
+  text-decoration: none;
+  display: block;
+  padding: 5px 10px;
+}
+
+.dropdown-content li a:hover {
+  color: #fff;
+  background-color: #444;
+}
+
+/* Main Content */
+.main-content {
+  margin-top: 70px;
+  padding: 20px;
+  flex-grow: 1;
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.shifted {
+  margin-left: 250px;
+}
+
+/* Menu Button */
+.menu-toggle {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color:  #ffc300;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 3;
+}

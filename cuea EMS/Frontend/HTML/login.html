@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CUEA EMS</title>
+  <link rel="stylesheet" href="../Css/style.css">
+ 
+</head>
+<body>
+  <div class="header">
+    <h1>CUEA EMS</h1>
+  </div>
+
+  <div class="container">
+    <div class="img-content">
+      <img src="../../project assest/CUEA-LOGO- copy (1) (1).png" alt="CUEA Logo" />
+    </div>
+
+    <div class="login" id="form-box">
+      <!-- Login Form -->
+      <form id="loginForm">
+        <p>User ID</p>
+        <input type="text" name="userid" placeholder="Enter your User ID" required>
+
+        <p>Password</p>
+        <input type="password" name="password" placeholder="Enter your password" required>
+
+        <button type="submit">Login</button>
+      </form>
+
+      <!-- Registration Form (hidden by default) -->
+      <form id="registerForm" style="display: none;">
+        <p>Full Name</p>
+        <input type="text" name="fullname" placeholder="Enter your full name" required>
+
+        <p>User ID</p>
+        <input type="text" name="userid" placeholder="Choose a User ID" required>
+
+        <p>Password</p>
+        <input type="password" name="password" placeholder="Create a password" required>
+
+        <p>Confirm Password</p>
+        <input type="password" name="confirm_password" placeholder="Confirm your password" required>
+
+        <button type="submit">Register</button>
+      </form>
+
+      <!-- Toggle Link -->
+      <div class="register-link">
+        <p id="toggleText">
+          Don't have an account? <a href="#" onclick="toggleForms()">Register here</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  <br>
+  <br>
+
+  <script>
+    function toggleForms() {
+      const loginForm = document.getElementById("loginForm");
+      const registerForm = document.getElementById("registerForm");
+      const toggleText = document.getElementById("toggleText");
+
+      if (loginForm.style.display === "none") {
+        // Show login form
+        loginForm.style.display = "block";
+        registerForm.style.display = "none";
+        toggleText.innerHTML = `Don't have an account? <a href="#" onclick="toggleForms()">Register here</a>`;
+      } else {
+        // Show registration form
+        loginForm.style.display = "none";
+        registerForm.style.display = "block";
+        toggleText.innerHTML = `Already have an account? <a href="#" onclick="toggleForms()">Login here</a>`;
+      }
+    }
+  </script>
+</body>
+</html>

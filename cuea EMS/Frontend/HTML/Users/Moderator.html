@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CUEA EMS</title>
+ 
+  <link rel="stylesheet" href="../../Css/Users.css">
+   <link rel="stylesheet" href="../../Css/style.css">
+ 
+</head>
+<body>
+
+  <!-- Menu Toggle Button -->
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+  <!-- Header -->
+  <div class="headerUser">
+  <h1><span class="bold-text">CUEA</span> Moderator</h1>
+</div>
+
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <ul>
+        <br>
+      <li><a href="#" onclick="loadContent('Dashboard.html')">Dashboard</a></li>
+      <li><a href="#" onclick="loadContent('Calendar.html')">Calendar</a></li>
+      <li><a href="#">Units</a></li>
+      <li><a href="#">Exams</a></li>
+      <li><a href="#">Results</a></li>
+      <li><a href="#">Students</a></li>
+      <li><a href="#">Announcements</a></li>
+      <li><a href="#">Settings</a></li>
+      <li><a href="#">Logout</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="main-content">
+    <h2>Welcome to CUEA Examination Management System</h2>
+    <p>This is your dashboard. Use the sidebar to navigate.</p>
+  </div>
+
+  <!-- Sidebar Toggle Script -->
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('main-content');
+      sidebar.classList.toggle('open');
+      content.classList.toggle('shifted');
+    }
+  </script>
+    <script src="../../Javascript/main.js"></script>
+    <script src="../../Javascript/style.js"></script>
+</body>
+</html>
