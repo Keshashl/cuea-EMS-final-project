@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CUEA EMS - Calendar</title>
+  <link rel="stylesheet" href="../../Css/style.css">
+  <link rel="stylesheet" href="../../Css/Users.css">
+  <style>
+    .calendar-container {
+      margin: 20px auto;
+      width: 900px;
+      background: #fff;
+      border: 2px solid #f1c40f;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .calendar-header h2 {
+      color: #e67e22;
+      margin: 0;
+    }
+
+    .calendar-header button {
+      background: #f1c40f;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .calendar-header button:hover {
+      background: #e67e22;
+      color: #fff;
+    }
+
+    table.calendar {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table.calendar th, table.calendar td {
+      width: 14.285%;
+      border: 1px solid #f1c40f;
+      text-align: center;
+      padding: 8px;
+      vertical-align: top;
+      height: 35px;
+    }
+
+    table.calendar th {
+      background: #f9e79f;
+      color: #333;
+    }
+
+    .event {
+      display: block;
+      background: #e67e22;
+      color: #fff;
+      padding: 3px 5px;
+      border-radius: 3px;
+      margin-top: 5px;
+      font-size: 0.85em;
+      word-break: break-word;
+    }
+
+    .add-event {
+      margin-top: 15px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-event input, .add-event button {
+      padding: 8px;
+    }
+
+    .add-event button {
+      background: #f1c40f;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+
+    .add-event button:hover {
+      background: #e67e22;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="headerUser">
+    <h1>General calendar</h1>
+  </div>
+
+  <!-- Calendar -->
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button onclick="prevMonth()">❮</button>
+      <h2 id="monthYear"></h2>
+      <button onclick="nextMonth()">❯</button>
+    </div>
+    <table class="calendar">
+      <thead>
+        <tr>
+          <th>Sun</th><th>Mon</th><th>Tue</th>
+          <th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+        </tr>
+      </thead>
+      <tbody id="calendar-body"></tbody>
+    </table>
+
+    <!-- Only admins should see this section -->
+    <div class="add-event">
+      <input type="text" id="eventText" placeholder="Event description" />
+      <input type="date" id="eventDate" />
+      <button onclick="addEvent()">Add Event</button>
+    </div>
+  </div>
+
+  <script>
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+
+    function pad2(n) { return String(n).padStart(2, '0'); }
+
+    // Function to generate the calendar
+    function generateCalendar(month, year) {
+      const body = document.getElementById('calendar-body');
+      const heading = document.getElementById('monthYear');
+      if (!body || !heading) return;
+
+      const months = ["January", "February", "March", "April", "May", "June", "July",
+                      "August", "September", "October", "November", "December"];
+      heading.textContent = months[month] + " " + year;
+      body.innerHTML = "";
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = 32 - new Date(year, month, 32).getDate();
+      let date = 1;
+
+      for (let i = 0; i < 6; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < 7; j++) {
+          const cell = document.createElement('td');
+          if (i === 0 && j < firstDay) {
+            row.appendChild(cell);
+          } else if (date > daysInMonth) {
+            row.appendChild(cell);
+          } else {
+            const iso = year + "-" + pad2(month + 1) + "-" + pad2(date);
+            cell.setAttribute('data-date', iso);
+            cell.innerHTML = "<strong>" + date + "</strong>";
+            row.appendChild(cell);
+            date++;
+          }
+        }
+        body.appendChild(row);
+        if (date > daysInMonth) break;
+      }
+    }
+
+    function prevMonth() {
+      if (currentMonth === 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else {
+        currentMonth--;
+      }
+      generateCalendar(currentMonth, currentYear);
+      renderEvents();
+    }
+
+    function nextMonth() {
+      if (currentMonth === 11) {
+        currentMonth = 0;
+        currentYear++;
+      } else {
+        currentMonth++;
+      }
+      generateCalendar(currentMonth, currentYear);
+      renderEvents();
+    }
+
+    // ✅ Add event (POST to backend)
+    async function addEvent() {
+      const textEl = document.getElementById('eventText');
+      const dateEl = document.getElementById('eventDate');
+      if (!textEl || !dateEl) return;
+
+      const text = (textEl.value || "").trim();
+      const date = dateEl.value;
+      if (!text || !date) return;
+
+      try {
+        const res = await fetch("/events/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ description: text, event_date: date })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          textEl.value = "";
+          dateEl.value = "";
+          renderEvents();
+        } else {
+          alert(data.error || "Failed to add event");
+        }
+      } catch (err) {
+        console.error("Error adding event:", err);
+      }
+    }
+
+    // ✅ Render events (GET from backend)
+    async function renderEvents() {
+      document.querySelectorAll('[data-date] .event').forEach(e => e.remove());
+
+      try {
+        const res = await fetch("/events");
+        const events = await res.json();
+
+        events.forEach(event => {
+          const selector = '[data-date="' + event.event_date + '"]';
+          const cell = document.querySelector(selector);
+          if (cell) {
+            const div = document.createElement("div");
+            div.className = "event";
+            div.textContent = event.description;
+            cell.appendChild(div);
+          }
+        });
+      } catch (err) {
+        console.error("Failed to load events:", err);
+      }
+    }
+
+    // Initial render
+    generateCalendar(currentMonth, currentYear);
+    renderEvents();
+  </script>
+</body>
+</html>

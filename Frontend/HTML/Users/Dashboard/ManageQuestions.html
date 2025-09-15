@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Questions</title>
+  <link rel="stylesheet" href="../Css/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fdfdfd;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #740000;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      max-width: 500px;
+      width: 100%;
+      margin-bottom: 25px;
+    }
+
+    form label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+      color: #740000;
+    }
+
+    form input, form select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    form button {
+      margin-top: 10px;
+      background: #740000;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    form button:hover {
+      background: #ffc304;
+      color: #000;
+    }
+
+    h2 {
+      color: #740000;
+      margin-top: 20px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    ul li {
+      background: #fff;
+      margin-bottom: 12px;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    ul li span {
+      flex: 1;
+    }
+
+    ul li button {
+      background: #e74c3c;
+      border: none;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    ul li button:hover {
+      background: #c0392b;
+    }
+
+    .complete-btn {
+      margin-top: 30px;
+      background: #ffc304;
+      color: #000;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .complete-btn:hover {
+      background: #740000;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Manage Questions</h1>
+
+  <form id="questionForm">
+    <label>Question:</label>
+    <input type="text" id="question_text" required>
+
+    <label>A:</label>
+    <input type="text" id="option_a">
+
+    <label>B:</label>
+    <input type="text" id="option_b">
+
+    <label>C:</label>
+    <input type="text" id="option_c">
+
+    <label>D:</label>
+    <input type="text" id="option_d">
+
+    <label>Correct Option:</label>
+    <select id="correct_option" required>
+      <option value="">--Select--</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+      <option value="D">D</option>
+    </select>
+
+    <button type="submit">➕ Add Question</button>
+  </form>
+
+  <h2>Questions</h2>
+  <ul id="questionsList"></ul>
+
+  <!-- ✅ Complete Button -->
+  <button class="complete-btn" onclick="goToDashboard()">✔ Complete & Return to Dashboard</button>
+
+  <script>
+    const examId = new URLSearchParams(window.location.search).get("exam_id");
+
+    async function loadQuestions() {
+      const res = await fetch(`/api/questions/exam/${examId}`);
+      const questions = await res.json();
+      const list = document.getElementById("questionsList");
+      list.innerHTML = "";
+
+      questions.forEach(q => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span>
+            <strong>${q.question_text}</strong> 
+            <small>(Correct: ${q.correct_option})</small>
+          </span>
+          <button onclick="deleteQuestion(${q.id})">❌</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById("questionForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const question = {
+        exam_id: examId,
+        question_text: document.getElementById("question_text").value,
+        option_a: document.getElementById("option_a").value,
+        option_b: document.getElementById("option_b").value,
+        option_c: document.getElementById("option_c").value,
+        option_d: document.getElementById("option_d").value,
+        correct_option: document.getElementById("correct_option").value
+      };
+
+      await fetch("/api/questions/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(question)
+      });
+
+      document.getElementById("questionForm").reset();
+      loadQuestions();
+    });
+
+    async function deleteQuestion(id) {
+      await fetch(`/api/questions/${id}`, { method: "DELETE" });
+      loadQuestions();
+    }
+
+    // ✅ Return to admin dashboard
+    function goToDashboard() {
+      window.location.href = "http://localhost:5000/Users/admin.html";
+    }
+
+    loadQuestions();
+  </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Exam</title>
+  <link rel="stylesheet" href="../Css/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      border: 2px solid #ffc304;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .container h1 {
+      text-align: center;
+      color: #740000;
+      margin-bottom: 25px;
+      font-size: 1.8em;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+      box-sizing: border-box;
+      transition: border 0.3s;
+    }
+
+    .form-group input:focus {
+      border-color: #740000;
+      outline: none;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #740000;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+
+    .btn:hover {
+      background: #ffc304;
+      color: #740000;
+      transform: translateY(-2px);
+    }
+
+    .note {
+      text-align: center;
+      margin-top: 15px;
+      color: #555;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 Create Exam</h1>
+    <form id="examForm">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" required>
+      </div>
+
+      <div class="form-group">
+        <label for="exam_type">Type</label>
+        <input type="text" id="exam_type" required>
+      </div>
+
+      <div class="form-group">
+        <label for="exam_date">Date</label>
+        <input type="date" id="exam_date" required>
+      </div>
+
+      <div class="form-group">
+        <label for="duration">Duration (minutes)</label>
+        <input type="number" id="duration">
+      </div>
+
+      <button type="submit" class="btn">✅ Create Exam</button>
+    </form>
+    <p class="note">Fill in exam details carefully before proceeding.</p>
+  </div>
+
+  <script>
+    document.getElementById("examForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const exam = {
+        title: document.getElementById("title").value,
+        exam_type: document.getElementById("exam_type").value,
+        exam_date: document.getElementById("exam_date").value,
+        duration_minutes: document.getElementById("duration").value,
+        status: "draft",
+        course_id: 1   // 🔹 hardcoded for now
+      };
+
+      const res = await fetch("/api/exams/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(exam)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ Exam Created!");
+        window.location.href = `ManageQuestions.html?exam_id=${data.id}`;
+      } else {
+        alert("❌ Error: " + data.error);
+      }
+    });
+  </script>
+</body>
+</html>

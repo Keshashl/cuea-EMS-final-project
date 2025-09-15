@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CUEA EMS</title>
+
+  <link rel="stylesheet" href="/Css/Users.css">
+  <link rel="stylesheet" href="/Css/style.css">
+
+  <style>
+    .menu-toggle {
+      position: absolute; 
+      top: 10px;
+      left: 10px;
+      z-index: 1001;
+    }
+
+    .dashboard-cards {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .card {
+      flex: 1;
+      min-width: 200px;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      background-color: var(--card-bg, #f9f9f9);
+      font-weight: bold;
+    }
+
+    .sidebar .dropdown .dropdown-content { display: none; }
+    .sidebar .dropdown.open .dropdown-content { display: block; }
+    .sidebar .dropdown > a { cursor: pointer; }
+
+    .delete-btn {
+      margin-top:10px;
+      color:white;
+      background:red;
+      border:none;
+      padding:5px 10px;
+      border-radius:5px;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Menu Toggle Button -->
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+  <!-- Header -->
+  <div class="headerUser">
+    <h1><span class="bold-text">CUEA</span> Admin</h1>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <ul>
+      <br>
+      <li><a href="#" onclick="showDashboard()">Dashboard</a></li>
+      
+      <li class="dropdown">
+        <a href="#" onclick="toggleDropdown(event)">Exams ▾</a>
+        <ul class="dropdown-content">
+          <li><a href="/Users/Dashboard/CreateExam.html">Create Exam</a></li>
+          <li><a href="#" onclick="loadContent('ManageExams')">Manage Exams</a></li>
+        </ul>
+      </li>
+
+      <li><a href="#" onclick="loadContent('Students')">Students</a></li>
+
+      <li class="dropdown">
+        <a href="#" onclick="toggleDropdown(event)">Lecturers ▾</a>
+        <ul class="dropdown-content">
+          <li><a href="#" onclick="loadContent('RegisterLecturer')">Register Lecturer</a></li>
+          <li><a href="#" onclick="loadContent('LecturerList')">Lecturer List</a></li>
+        </ul>
+      </li>
+
+      <li><a href="#" onclick="loadContent('Settings')">Settings</a></li>
+      <li><a href="../login.html">Logout</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="main-content">
+    <h2>Welcome to CUEA Examination Management System</h2>
+    <p>This is your dashboard. Use the sidebar to navigate.</p>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('main-content');
+    sidebar.classList.toggle('open');
+    content.classList.toggle('shifted');
+  }
+
+  async function loadContent(page) {
+    const main = document.getElementById("main-content");
+
+    /* 📚 Students List */
+    if (page === "Students") {
+      try {
+        const res = await fetch("http://localhost:5000/api/students");
+        if (!res.ok) throw new Error("Failed to fetch students");
+
+        const students = await res.json();
+
+        main.innerHTML = `
+          <h2>Registered Students</h2>
+          ${students.length === 0 ? `
+            <p>No students found.</p>
+          ` : `
+            <ul id="studentList" style="list-style:none; padding:0;">
+              ${students.map(stu => `
+                <li style="margin-bottom:10px; border:1px solid #ddd; border-radius:5px; padding:10px;">
+                  <div onclick="toggleStudent(${stu.id})" style="cursor:pointer; font-weight:bold;">
+                    👤 ${stu.fullname}
+                  </div>
+                  <div id="student-${stu.id}" style="display:none; margin-top:10px; padding-left:15px;">
+                    <em>Loading results...</em>
+                  </div>
+                  <button onclick="deleteStudent(${stu.id})" class="delete-btn">🗑 Delete</button>
+                </li>
+              `).join("")}
+            </ul>
+          `}
+        `;
+      } catch (err) {
+        console.error("Error loading students:", err);
+        main.innerHTML = `<h2>Students</h2><p style="color:red;">Failed to load students.</p>`;
+      }
+    }
+
+    /* 📋 Manage Exams */
+    else if (page === "ManageExams") {
+      try {
+        const res = await fetch("http://localhost:5000/api/exams");
+        if (!res.ok) throw new Error("Failed to fetch exams");
+
+        const exams = await res.json();
+
+        if (exams.length === 0) {
+          main.innerHTML = `<h2>Manage Exams</h2><p>No exams found.</p>`;
+          return;
+        }
+
+        main.innerHTML = `
+          <h2>Manage Exams</h2>
+          <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${exams.map(exam => `
+                <tr>
+                  <td>${exam.id}</td>
+                  <td>${exam.title}</td>
+                  <td>${exam.exam_type}</td>
+                  <td>${new Date(exam.created_at).toLocaleString()}</td>
+                  <td>
+                    <button onclick="deleteExam(${exam.id})" class="delete-btn">🗑 Delete</button>
+                    <a href="http://localhost:5000/Users/Dashboard/ManageQuestions.html?exam_id=${exam.id}">
+                      ✏ Manage Questions
+                    </a>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        console.error("Error loading exams:", err);
+        main.innerHTML = `<h2>Manage Exams</h2><p style="color:red;">Failed to load exams.</p>`;
+      }
+    }
+
+    /* 👨‍🏫 Lecturer List */
+    else if (page === "LecturerList") {
+      try {
+        const res = await fetch("http://localhost:5000/api/lecturers");
+        if (!res.ok) throw new Error("Failed to fetch lecturers");
+
+        const lecturers = await res.json();
+
+        main.innerHTML = `
+          <h2>Lecturer List</h2>
+          ${lecturers.length === 0 ? `<p>No lecturers found.</p>` : `
+            <ul id="lecturerList" style="list-style:none; padding:0;">
+              ${lecturers.map(lec => `
+                <li style="margin-bottom:10px; border:1px solid #ddd; border-radius:5px; padding:10px;">
+                  👨‍🏫 <b>${lec.fullname}</b> <br>
+                  <small>Email: ${lec.email}</small> <br>
+                  <small>ID: ${lec.lecturer_code}</small><br>
+                  <button onclick="deleteLecturer(${lec.id})" class="delete-btn">🗑 Delete</button>
+                </li>
+              `).join("")}
+            </ul>
+          `}
+        `;
+      } catch (err) {
+        console.error("Error loading lecturers:", err);
+        main.innerHTML = `<h2>Lecturers</h2><p style="color:red;">Failed to load lecturers.</p>`;
+      }
+    }
+
+    /* 📝 Register Lecturer */
+    else if (page === "RegisterLecturer") {
+      main.innerHTML = `
+        <h2>Register Lecturer</h2>
+        <form id="lecturerForm" style="max-width:400px;">
+          <label>Fullname:</label><br>
+          <input type="text" id="lecFullname" required><br><br>
+          <label>Email:</label><br>
+          <input type="email" id="lecEmail" required><br><br>
+          <label>Password:</label><br>
+          <input type="password" id="lecPassword" required><br><br>
+          <button type="submit" class="btn primary">Register Lecturer</button>
+        </form>
+        <div id="lecMsg"></div>
+      `;
+
+      document.getElementById("lecturerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fullname = document.getElementById("lecFullname").value.trim();
+        const email = document.getElementById("lecEmail").value.trim();
+        const password = document.getElementById("lecPassword").value.trim();
+        const msg = document.getElementById("lecMsg");
+
+        if (!fullname || !email || !password) {
+          msg.textContent = "❌ All fields are required.";
+          msg.style.color = "red";
+          return;
+        }
+
+        try {
+          const res = await fetch("http://localhost:5000/api/lecturers/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fullname, email, password })
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            msg.textContent = "✅ Lecturer registered successfully!";
+            msg.style.color = "green";
+            document.getElementById("lecturerForm").reset();
+          } else {
+            msg.textContent = "❌ " + (data.error || "Failed to register lecturer.");
+            msg.style.color = "red";
+          }
+        } catch (err) {
+          console.error("Error registering lecturer:", err);
+          msg.textContent = "❌ Failed to register lecturer.";
+          msg.style.color = "red";
+        }
+      });
+    }
+
+    /* ⚙️ Settings */
+    else if (page === "Settings") {
+      const user = JSON.parse(localStorage.getItem("user")) || {};
+      main.innerHTML = `
+        <h2>Settings</h2>
+        <div class="section">
+          <h3>Change Password</h3>
+          <p class="muted">Change your own password using your Admin ID or email.</p>
+          <div class="input-row">
+            <input id="cpIdentifier" type="text" placeholder="Your ID or Email" value="${user.code || user.email || ''}">
+            <input id="cpCurrent" type="password" placeholder="Current Password">
+            <input id="cpNew" type="password" placeholder="New Password">
+            <button class="btn primary" onclick="changePassword()">Update</button>
+          </div>
+          <div id="cpMsg" class="muted"></div>
+        </div>
+      `;
+    }
+  }
+
+  /* Expand Student Results */
+  async function toggleStudent(studentId) {
+    const container = document.getElementById(`student-${studentId}`);
+    const isHidden = container.style.display === "none";
+
+    if (isHidden) {
+      container.style.display = "block";
+      try {
+        const res = await fetch(`http://localhost:5000/api/students/${studentId}/results`);
+        if (!res.ok) throw new Error("Failed to fetch results");
+
+        const results = await res.json();
+
+        if (results.length === 0) {
+          container.innerHTML = `<p>No results available.</p>`;
+        } else {
+          container.innerHTML = `
+            <table border="1" cellpadding="6" cellspacing="0" style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr><th>Exam</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                ${results.map(r => `
+                  <tr>
+                    <td>${r.exam_title}</td>
+                    <td>${new Date(r.submitted_at).toLocaleString()}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          `;
+        }
+      } catch (err) {
+        console.error("Error fetching student results:", err);
+        container.innerHTML = `<p style="color:red;">Failed to load results.</p>`;
+      }
+    } else {
+      container.style.display = "none";
+    }
+  }
+
+  /* Delete Exam */
+  async function deleteExam(examId) {
+    if (!confirm("Are you sure you want to delete this exam?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/exams/${examId}`, { method: "DELETE" });
+      if (res.ok) {
+        alert("Exam deleted successfully");
+        loadContent("ManageExams");
+      } else {
+        const data = await res.json();
+        alert("Error: " + (data.error || "Failed to delete exam"));
+      }
+    } catch (err) {
+      console.error("Error deleting exam:", err);
+      alert("Failed to delete exam");
+    }
+  }
+
+  /* Delete Student */
+  async function deleteStudent(studentId) {
+    if (!confirm("Are you sure you want to delete this student?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/students/${studentId}`, { method: "DELETE" });
+      if (res.ok) {
+        alert("Student deleted successfully");
+        loadContent("Students");
+      } else {
+        const data = await res.json();
+        alert("Error: " + (data.error || "Failed to delete student"));
+      }
+    } catch (err) {
+      console.error("Error deleting student:", err);
+      alert("Failed to delete student");
+    }
+  }
+
+  /* Delete Lecturer */
+  async function deleteLecturer(lecturerId) {
+    if (!confirm("Are you sure you want to delete this lecturer?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/lecturers/${lecturerId}`, { method: "DELETE" });
+      if (res.ok) {
+        alert("Lecturer deleted successfully");
+        loadContent("LecturerList");
+      } else {
+        const data = await res.json();
+        alert("Error: " + (data.error || "Failed to delete lecturer"));
+      }
+    } catch (err) {
+      console.error("Error deleting lecturer:", err);
+      alert("Failed to delete lecturer");
+    }
+  }
+
+  /* Dashboard Overview */
+  async function showDashboard() {
+    const main = document.getElementById("main-content");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/stats/overview");
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      const data = await res.json();
+
+      main.innerHTML = `
+        <h2>Dashboard Overview</h2>
+        <div class="dashboard-cards">
+          <div class="card">Total Students: ${data.students}</div>
+          <div class="card">Total Lecturers: ${data.lecturers}</div>
+          <div class="card">Total Exams: ${data.exams}</div>
+        </div>
+      `;
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+      main.innerHTML = `
+        <h2>Dashboard Overview</h2>
+        <p style="color:red;">Failed to load stats. Please make sure your server is running at http://localhost:5000</p>
+      `;
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    showDashboard();
+  });
+
+  function toggleDropdown(e) {
+    e.preventDefault();
+    const li = e.currentTarget.closest('.dropdown');
+    document.querySelectorAll('.sidebar .dropdown.open').forEach(d => {
+      if (d !== li) d.classList.remove('open');
+    });
+    li.classList.toggle('open');
+  }
+</script>
+
+<script>
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || user.role !== "admin") {
+    window.location.href = "../Login.html";
+  }
+</script>
+
+<script>
+(function () {
+  function changePassword() {
+    const idEl  = document.getElementById("cpIdentifier");
+    const curEl = document.getElementById("cpCurrent");
+    const newEl = document.getElementById("cpNew");
+    const msg   = document.getElementById("cpMsg");
+
+    const identifier      = (idEl?.value  || "").trim();
+    const currentPassword = (curEl?.value || "").trim();
+    const newPassword     = (newEl?.value || "").trim();
+
+    if (!identifier || !currentPassword || !newPassword) {
+      msg.textContent = "❌ All fields are required.";
+      msg.style.color = "red";
+      return;
+    }
+
+    msg.textContent = "Updating password...";
+    msg.style.color = "";
+
+    fetch("http://localhost:5000/api/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fullname, email, password })
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            msg.textContent = "✅ Lecturer registered successfully!";
+            msg.style.color = "green";
+            document.getElementById("lecturerForm").reset();
+          } else {
+            msg.textContent = "❌ " + (data.error || "Failed to register lecturer.");
+            msg.style.color = "red";
+          }
+        } catch (err) {
+          console.error("Error registering lecturer:", err);
+          msg.textContent = "❌ Failed to register lecturer.";
+          msg.style.color = "red";
+        }
+      });
+    }
+
+    /* ⚙️ Settings */
+    else if (page === "Settings") {
+      const user = JSON.parse(localStorage.getItem("user")) || {};
+      main.innerHTML = `
+        <h2>Settings</h2>
+        <div class="section">
+          <h3>Change Password</h3>
+          <p class="muted">Change your own password using your Admin ID or email.</p>
+          <div class="input-row">
+            <input id="cpIdentifier" type="text" placeholder="Your ID or Email" value="${user.code || user.email || ''}">
+            <input id="cpCurrent" type="password" placeholder="Current Password">
+            <input id="cpNew" type="password" placeholder="New Password">
+            <button class="btn primary" onclick="changePassword()">Update</button>
+          </div>
+          <div id="cpMsg" class="muted"></div>
+        </div>
+      `;
+    }
+  }
+
+  /* =====================
+     Expand Student Results
+  ===================== */
+  async function toggleStudent(studentId) {
+    const container = document.getElementById(`student-${studentId}`);
+    const isHidden = container.style.display === "none";
+
+    if (isHidden) {
+      container.style.display = "block";
+      try {
+        const res = await fetch(`http://localhost:5000/api/students/${studentId}/results`);
+        if (!res.ok) throw new Error("Failed to fetch results");
+
+        const results = await res.json();
+
+        if (results.length === 0) {
+          container.innerHTML = `<p>No results available.</p>`;
+        } else {
+          container.innerHTML = `
+            <table border="1" cellpadding="6" cellspacing="0" style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr><th>Exam</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                ${results.map(r => `
+                  <tr>
+                    <td>${r.exam_title}</td>
+                    <td>${new Date(r.submitted_at).toLocaleString()}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          `;
+        }
+      } catch (err) {
+        console.error("Error fetching student results:", err);
+        container.innerHTML = `<p style="color:red;">Failed to load results.</p>`;
+      }
+    } else {
+      container.style.display = "none";
+    }
+  }
+
+  /* =====================
+     Delete Exam
+  ===================== */
+  async function deleteExam(examId) {
+    if (!confirm("Are you sure you want to delete this exam?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/exams/${examId}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        alert("Exam deleted successfully");
+        loadContent("ManageExams");
+      } else {
+        const data = await res.json();
+        alert("Error: " + (data.error || "Failed to delete exam"));
+      }
+    } catch (err) {
+      console.error("Error deleting exam:", err);
+      alert("Failed to delete exam");
+    }
+  }
+
+  /* =====================
+     Dashboard Overview
+  ===================== */
+  async function showDashboard() {
+    const main = document.getElementById("main-content");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/stats/overview");
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      const data = await res.json();
+
+      main.innerHTML = `
+        <h2>Dashboard Overview</h2>
+        <div class="dashboard-cards">
+          <div class="card">Total Students: ${data.students}</div>
+          <div class="card">Total Lecturers: ${data.lecturers}</div>
+          <div class="card">Total Exams: ${data.exams}</div>
+        </div>
+      `;
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+      main.innerHTML = `
+        <h2>Dashboard Overview</h2>
+        <p style="color:red;">Failed to load stats. Please make sure your server is running at http://localhost:5000</p>
+      `;
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    showDashboard();
+  });
+
+  /* =====================
+     Dropdown Toggle
+  ===================== */
+  function toggleDropdown(e) {
+    e.preventDefault();
+    const li = e.currentTarget.closest('.dropdown');
+    document.querySelectorAll('.sidebar .dropdown.open').forEach(d => {
+      if (d !== li) d.classList.remove('open');
+    });
+    li.classList.toggle('open');
+  }
+</script>
+
+<script>
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || user.role !== "admin") {
+    window.location.href = "../Login.html";
+  }
+</script>
+
+<script>
+(function () {
+  function changePassword() {
+    const idEl  = document.getElementById("cpIdentifier");
+    const curEl = document.getElementById("cpCurrent");
+    const newEl = document.getElementById("cpNew");
+    const msg   = document.getElementById("cpMsg");
+
+    const identifier      = (idEl?.value  || "").trim();
+    const currentPassword = (curEl?.value || "").trim();
+    const newPassword     = (newEl?.value || "").trim();
+
+    if (!identifier || !currentPassword || !newPassword) {
+      msg.textContent = "❌ All fields are required.";
+      msg.style.color = "red";
+      return;
+    }
+
+    msg.textContent = "Updating password...";
+    msg.style.color = "";
+
+    fetch("http://localhost:5000/api/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier, currentPassword, newPassword, role: "admin" })
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          msg.textContent = "✅ Password updated successfully.";
+          msg.style.color = "green";
+          if (curEl) curEl.value = "";
+          if (newEl) newEl.value = "";
+        } else {
+          msg.textContent = "❌ " + (data.error || "Failed to update password.");
+          msg.style.color = "red";
+        }
+      })
+      .catch((err) => {
+        console.error("Error changing password:", err);
+        msg.textContent = "❌ Failed to update password.";
+        msg.style.color = "red";
+      });
+  }
+
+  window.changePassword = changePassword;
+})();
+</script>
+
+</body>
+</html>

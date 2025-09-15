@@ -1,0 +1,85 @@
+.calendar-container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+
+#month-year {
+  color: #750000;
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.day-name,
+.day {
+  padding: 15px;
+  border: 1px solid #ddd;
+  min-height: 80px;
+  background-color: #f9f9f9;
+}
+
+.day-name {
+  background-color: #750000;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+.day.today {
+  background-color: #ffc300;
+  font-weight: bold;
+  border: 2px solid #750000;
+}
+
+.day:hover {
+  background-color: #ffe58a;
+  cursor: pointer;
+}
+
+.event {
+  font-size: 12px;
+  margin-top: 5px;
+  background-color: #750000;
+  color: white;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+/* Modal Styling */
+.event-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100%; width: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  width: 300px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #750000;
+}
